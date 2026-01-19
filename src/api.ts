@@ -12,6 +12,9 @@ install({
 const app = express();
 const port = 3000;
 
+// 添加 JSON 解析中间件
+app.use(express.json());
+
 // 添加 CORS 支持
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -43,6 +46,7 @@ app.get('/list', async (_, res) => {
 
 app.post('/delete', async (req, res) => {
   const response = await deleteFile({ ObjectName: req.body.ObjectName });
+
   if (response) res.json(response);
   else res.json({ res: false, message: 'Delete error' });
 });

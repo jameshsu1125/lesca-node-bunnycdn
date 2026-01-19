@@ -43,17 +43,18 @@ const createApp = () => {
     });
 
     button2.addEventListener('click', () => {
-      console.log(files);
-      return;
       const [firstFile] = files;
       if (firstFile) {
         fetch('http://localhost:3000/delete', {
           method: 'POST',
-          body: JSON.stringify({ filename: firstFile.FileName }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(firstFile),
         })
           .then((response) => response.json())
           .then((result) => {
-            if (result.success) {
+            if (result.res) {
               alert('Delete successful!');
             }
           });
@@ -63,13 +64,8 @@ const createApp = () => {
     fetch('http://localhost:3000/list', { method: 'GET' })
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
-
         if (result.res) {
           files = result.files;
-          result.files.forEach((file: any) => {
-            console.log(file);
-          });
         } else {
           console.error('Failed to fetch file list:', result.error);
         }
