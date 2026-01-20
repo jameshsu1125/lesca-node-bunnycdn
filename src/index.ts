@@ -80,7 +80,11 @@ export const list = async () => {
           response.on('end', () => {
             try {
               const list = JSON.parse(data);
-              resolve({ res: true, message: 'List retrieved successfully', files: list });
+              const currentList = list.map((item: { [k: string]: any }) => {
+                const Url = `https://${config.storageZone}.b-cdn.net/${config.folderName}/${item.ObjectName}`;
+                return { ...item, Url };
+              });
+              resolve({ res: true, message: 'List retrieved successfully', files: currentList });
             } catch (err) {
               reject({ res: false, message: 'Failed to parse response' });
             }
@@ -95,18 +99,27 @@ export const list = async () => {
   });
 };
 
-export const deleteFile = ({ ObjectName }: { ObjectName: string }) => {
+export const deleteFile = ({ ObjectName, href }: { ObjectName?: string; href?: string }) => {
   return new Promise<{ res: boolean; message: string }>((resolve, reject) => {
+    if (!ObjectName && !href) {
+      reject({ res: false, message: 'No file specified for deletion' });
+      return;
+    }
     try {
       const hostname = config.region
         ? `${config.region}.${config.baseHostName}`
         : config.baseHostName;
+
+      const currentObjectName = href
+        ? decodeURIComponent(href.split(`/`)[href.split(`/`).length - 1])
+        : ObjectName!;
+
       https
         .request(
           {
             method: 'DELETE',
             hostname,
-            path: `/${config.storageZone}/${config.folderName}/${ObjectName}`,
+            path: `/${config.storageZone}/${config.folderName}/${currentObjectName}`,
             headers: { AccessKey: config.password },
           },
           (response) => {

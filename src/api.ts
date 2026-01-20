@@ -45,7 +45,9 @@ app.get('/list', async (_, res) => {
 });
 
 app.post('/delete', async (req, res) => {
-  const response = await deleteFile({ ObjectName: req.body.ObjectName });
+  console.log(req.body);
+
+  const response = await deleteFile({ href: req.body.href });
 
   if (response) res.json(response);
   else res.json({ res: false, message: 'Delete error' });

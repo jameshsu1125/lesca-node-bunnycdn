@@ -8,9 +8,28 @@
     <meta property="og:site_name" content="" />
     <meta name="apple-mobile-web-app-capable" content="no" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css"
+      rel="stylesheet"
+      type="text/css"
+    />
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="./app.ts"></script>
+    <div class="flex h-screen w-full flex-col items-center justify-center gap-4">
+      <div class="join">
+        <input id="fileInput" type="file" class="file-input" />
+        <button id="upload" class="btn bg-base-200">Upload</button>
+      </div>
+
+      <div class="flex w-full flex-col items-center">
+        <div class="flex-wriap flex w-full flex-row justify-center gap-4" id="file-list"></div>
+        <button id="list" class="btn btn-primary mt-4">Load More</button>
+      </div>
+    </div>
   </body>
 </html>
