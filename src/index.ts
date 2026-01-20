@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import https from 'https';
 import sharp from 'sharp';
-import { InstallParams, UploadParams } from './type';
+import { File, InstallParams, UploadParams } from './type';
 
 const config = {
   region: 'SG',
@@ -62,7 +62,7 @@ export const upload = async ({ file, sharpConfig }: UploadParams) => {
 };
 
 export const list = async () => {
-  return new Promise<{ res: boolean; message: string; files?: any[] }>((resolve, reject) => {
+  return new Promise<{ res: boolean; message: string; files?: File[] }>((resolve, reject) => {
     try {
       const hostName = config.region
         ? `${config.region}.${config.baseHostName}`
@@ -136,3 +136,7 @@ export const deleteFile = ({ ObjectName, href }: { ObjectName?: string; href?: s
     }
   });
 };
+
+const BunnyCDN = { install, upload, list, deleteFile };
+
+export default BunnyCDN;

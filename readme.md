@@ -16,56 +16,72 @@ Use it calculator timestamp for animation.
 # Installation
 
 ```sh
-npm install lesca-enterframe --save
+npm install lesca-node-bunnycdn --save
 ```
 
 ## Usage
 
 As a Node module:
 
-```JSX
-import { useState, useEffect } from 'react';
-import EnterFrame from 'lesca-enterframe';
+```TS
+import BunnyCDN from 'lesca-node-bunnycdn';
+import multer from 'multer';
+import express from 'express';
 
-const Component = () => {
-  const [time, setTime] = useState(0);
+BunnyCDN.install({
+  password: '7bcc3895-xxxx-xxxxxxxxxxxx-xxxx-xxxx', // storage key
+  storageZone: 'npm-demo', // zone
+  region: 'SG', // your region setting
+  folderName: 'your-folder', // start with folder name
+});
 
-  useEffect(() => {
-    EnterFrame.add((e) => {
-      const { delta } = e;
-      setTime(delta);
-    });
-  }, []);
+const uploadMulter = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
-  return (
-    <div>
-      <h1>{time}</h1>
-      <button onClick={() => EnterFrame.play()}>Play</button>
-      <button onClick={() => EnterFrame.stop()}>Stop</button>
-    </div>
-  );
-};
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+
+app.post('/upload', uploadMulter.single('file'), async (req, res) => {
+  const response = await BunnyCDN.upload({
+    file: req.file,
+    sharpConfig: { format: 'webp', quality: 80 },
+  });
+  if (response) res.json(response);
+  else res.json({ res: false, message: 'Upload error' });
+});
+
+app.get('/list', async (_, res) => {
+  const response = await BunnyCDN.list();
+
+ if (response) res.json(response);
+  else res.json({ res: false, message: 'List error' });
+});
+
+app.post('/delete', async (req, res) => {
+  const response = await BunnyCDN.deleteFile({ href: req.body.href });
+
+  if (response) res.json(response);
+  else res.json({ res: false, message: 'Delete error' });
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
+
 ```
-
-## Development
 
 ### Methods
 
-| method                         |       description        | return |
-| :----------------------------- | :----------------------: | -----: |
-| .**add**(**frame**:_function_) |     extend call func     |   void |
-| .**play**()                    |  continue calling func   |   void |
-| .**stop**()                    |    stop calling func     |   void |
-| .**undo**()                    | reverse to last function |   void |
-| .**destroy**()                 |       remove event       |   void |
-| .**setFPS**(**fps**:_number_)  |         set FPS          |   void |
-| .**reset**(**fps**:_number_)   |       reset delta        |   void |
-
-# Properties
-
-| Properties |  type  |                description                | default |
-| :--------- | :----: | :---------------------------------------: | ------: |
-| todo       | Object | get function and list of function history |      [] |
+| method                   |       description        | return |
+| :----------------------- | :----------------------: | -----: |
+| .**install**(options)    |     extend call func     |   void |
+| .**upload**(options)     |  continue calling func   |   void |
+| .**list**()              |    stop calling func     |   void |
+| .**deleteFile**(options) | reverse to last function |   void |
 
 ### Features
 

@@ -1,8 +1,8 @@
 import express from 'express';
 import multer from 'multer';
-import { deleteFile, install, list, upload } from '.';
+import BunnyCDN from '.';
 
-install({
+BunnyCDN.install({
   password: '7bcc3895-199e-4545-9d9c4fc41248-858b-4002',
   storageZone: 'npm-demo',
   region: 'SG',
@@ -33,22 +33,22 @@ const uploadMulter = multer({
 });
 
 app.post('/upload', uploadMulter.single('file'), async (req, res) => {
-  const response = await upload({ file: req.file, sharpConfig: { format: 'webp', quality: 80 } });
+  const response = await BunnyCDN.upload({
+    file: req.file,
+    sharpConfig: { format: 'webp', quality: 80 },
+  });
   if (response) res.json(response);
   else res.json({ res: false, message: 'Upload error' });
 });
 
 app.get('/list', async (_, res) => {
-  const response = await list();
+  const response = await BunnyCDN.list();
   if (response) res.json(response);
   else res.json({ res: false, message: 'List error' });
 });
 
 app.post('/delete', async (req, res) => {
-  console.log(req.body);
-
-  const response = await deleteFile({ href: req.body.href });
-
+  const response = await BunnyCDN.deleteFile({ href: req.body.href });
   if (response) res.json(response);
   else res.json({ res: false, message: 'Delete error' });
 });
