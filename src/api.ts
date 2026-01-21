@@ -1,9 +1,12 @@
 import express from 'express';
 import multer from 'multer';
 import BunnyCDN from '.';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
 
 BunnyCDN.install({
-  password: '7bcc3895-199e-4545-9d9c4fc41248-858b-4002',
+  password: process.env.VITE_PASSWORD || 'unset',
   storageZone: 'npm-demo',
   region: 'SG',
   folderName: 'folder',
