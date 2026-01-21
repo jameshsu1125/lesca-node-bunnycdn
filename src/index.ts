@@ -45,7 +45,8 @@ export const upload = async ({ file, sharpConfig }: UploadParams) => {
         };
         const request = https.request(options, (response) => {
           if (response.statusCode === 201) {
-            const url = `https://${config.storageZone}.b-cdn.net/${config.folderName}/${filename}`;
+            const currentFolder = config.folderName ? `${config.folderName}/` : '';
+            const url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${filename}`;
             resolve({ res: true, message: 'upload success', url });
           } else reject({ res: false, message: 'Upload failed' });
         });
@@ -68,8 +69,8 @@ export const list = async () => {
         ? `${config.region}.${config.baseHostName}`
         : config.baseHostName;
 
-      const foldName = config.folderName === '' ? '' : `${config.folderName}/`;
-      const url = `https://${hostName}/${config.storageZone}/${foldName}`;
+      const currentFolder = config.folderName ? `${config.folderName}/` : '';
+      const url = `https://${hostName}/${config.storageZone}/${currentFolder}`;
       const headers = { AccessKey: config.password };
       https
         .get(url, { headers }, (response) => {
@@ -81,7 +82,7 @@ export const list = async () => {
             try {
               const list = JSON.parse(data);
               const currentList = list.map((item: { [k: string]: any }) => {
-                const Url = `https://${config.storageZone}.b-cdn.net/${config.folderName}/${item.ObjectName}`;
+                const Url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${item.ObjectName}`;
                 return { ...item, Url };
               });
               resolve({ res: true, message: 'List retrieved successfully', files: currentList });
