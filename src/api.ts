@@ -2,10 +2,11 @@ import express from 'express';
 import multer from 'multer';
 import BunnyCDN from '.';
 import dotenv from 'dotenv';
+import sharp from 'sharp';
 
 dotenv.config({ path: '.env.local' });
 
-BunnyCDN.install({
+const bunnyCDN = new BunnyCDN({
   password: process.env.VITE_PASSWORD || 'unset',
   storageZone: 'npm-demo',
   region: 'SG',
@@ -36,22 +37,35 @@ const uploadMulter = multer({
 });
 
 app.post('/upload', uploadMulter.single('file'), async (req, res) => {
-  const response = await BunnyCDN.upload({
-    file: req.file,
-    sharpConfig: { format: 'webp', quality: 80 },
+  const sharpConfig: { format?: 'jpeg' | 'png' | 'webp'; quality?: number; width?: number } = {
+    format: 'webp',
+    quality: 80,
+    width: 720,
+  };
+
+  const buffer = await sharp(req.file?.buffer)
+    .resize({
+      width: sharpConfig.width,
+      withoutEnlargement: true,
+    })
+    .toFormat(sharpConfig.format || 'webp', { quality: sharpConfig.quality || 80 })
+    .toBuffer();
+
+  const response = await bunnyCDN.upload({
+    buffer,
   });
   if (response) res.json(response);
   else res.json({ res: false, message: 'Upload error' });
 });
 
 app.get('/list', async (_, res) => {
-  const response = await BunnyCDN.list();
+  const response = await bunnyCDN.list();
   if (response) res.json(response);
   else res.json({ res: false, message: 'List error' });
 });
 
 app.post('/delete', async (req, res) => {
-  const response = await BunnyCDN.deleteFile({ href: req.body.href });
+  const response = await bunnyCDN.deleteFile({ href: req.body.href });
   if (response) res.json(response);
   else res.json({ res: false, message: 'Delete error' });
 });

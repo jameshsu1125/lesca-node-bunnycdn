@@ -1,6 +1,6 @@
 import { File, InstallParams, UploadParams } from './type';
 export declare const install: ({ storageZone, password, region, folderName }: InstallParams) => void;
-export declare const upload: ({ file, sharpConfig }: UploadParams) => Promise<{
+export declare const upload: ({ file, buffer }: UploadParams) => Promise<{
     res: boolean;
     message: string;
     url?: string;
@@ -20,7 +20,7 @@ export declare const deleteFile: ({ ObjectName, href }: {
 }>;
 declare const BunnyCDN: {
     install: ({ storageZone, password, region, folderName }: InstallParams) => void;
-    upload: ({ file, sharpConfig }: UploadParams) => Promise<{
+    upload: ({ file, buffer }: UploadParams) => Promise<{
         res: boolean;
         message: string;
         url?: string;

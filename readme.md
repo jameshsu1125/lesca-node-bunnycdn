@@ -18,67 +18,159 @@ npm install lesca-node-bunnycdn --save
 
 ## Usage
 
-As a Node module:
+# Lesca Node BunnyCDN
 
-```TS
-import BunnyCDN from 'lesca-node-bunnycdn';
-import multer from 'multer';
-import express from 'express';
+A Node.js client library for BunnyCDN storage operations with TypeScript support.
 
-BunnyCDN.install({
-  password: '7bcc3895-xxxx-xxxxxxxxxxxx-xxxx-xxxx', // storage key
-  storageZone: 'npm-demo', // zone
-  region: 'SG', // your region setting
-  folderName: 'your-folder', // start with folder name
-});
+## Installation
 
-const uploadMulter = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
-
-const app = express();
-const port = 3000;
-
-app.use(express.json());
-
-app.post('/upload', uploadMulter.single('file'), async (req, res) => {
-  const response = await BunnyCDN.upload({
-    file: req.file,
-    sharpConfig: { format: 'webp', quality: 80 },
-  });
-  if (response) res.json(response);
-  else res.json({ res: false, message: 'Upload error' });
-});
-
-app.get('/list', async (_, res) => {
-  const response = await BunnyCDN.list();
-
- if (response) res.json(response);
-  else res.json({ res: false, message: 'List error' });
-});
-
-app.post('/delete', async (req, res) => {
-  const response = await BunnyCDN.deleteFile({ href: req.body.href });
-
-  if (response) res.json(response);
-  else res.json({ res: false, message: 'Delete error' });
-});
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
-
+```bash
+npm install lesca-node-bunnycdn
 ```
 
-### Methods
+## Usage
 
-| method                   |       description        | return |
-| :----------------------- | :----------------------: | -----: |
-| .**install**(options)    |     extend call func     |   void |
-| .**upload**(options)     |  continue calling func   |   void |
-| .**list**()              |    stop calling func     |   void |
-| .**deleteFile**(options) | reverse to last function |   void |
+### Basic Usage with Constructor
+
+```typescript
+import BunnyCDN from 'lesca-node-bunnycdn';
+
+// Initialize client with configuration
+const client = new BunnyCDN({
+  storageZone: 'your-storage-zone',
+  password: 'your-password',
+  region: 'SG', // optional, defaults to 'SG'
+  folderName: 'uploads', // optional, defaults to ''
+});
+
+// Upload a file
+const uploadResult = await client.upload({
+  buffer: yourBuffer, // or file: yourFile
+});
+
+// List files
+const listResult = await client.list();
+
+// Delete a file
+const deleteResult = await client.deleteFile({
+  ObjectName: 'filename.webp',
+  // or href: 'https://your-zone.b-cdn.net/uploads/filename.webp'
+});
+```
+
+### Configuration Parameters
+
+| Parameter     | Type   | Required | Default | Description                                         |
+| ------------- | ------ | -------- | ------- | --------------------------------------------------- |
+| `storageZone` | string | Yes      | -       | Your BunnyCDN storage zone name                     |
+| `password`    | string | Yes      | -       | Your BunnyCDN storage password                      |
+| `region`      | string | No       | 'SG'    | Storage region (e.g., 'SG', 'NY', 'LA', 'UK', 'DE') |
+| `folderName`  | string | No       | ''      | Folder path within the storage zone                 |
+
+## API Reference
+
+### Constructor
+
+```typescript
+new BunnyCDNClient({
+  storageZone: string;
+  password: string;
+  region?: string;
+  folderName?: string;
+})
+```
+
+### upload(params)
+
+Uploads a file to BunnyCDN storage.
+
+**Parameters:**
+
+- `file`: Express multer file object (optional)
+- `buffer`: Buffer containing file data (optional)
+
+**Returns:**
+
+```typescript
+Promise<{
+  res: boolean;
+  message: string;
+  url?: string;
+  error?: any;
+}>;
+```
+
+**Example:**
+
+```typescript
+const result = await client.upload({
+  buffer: fs.readFileSync('image.jpg'),
+});
+
+if (result.res) {
+  console.log('Upload successful:', result.url);
+} else {
+  console.error('Upload failed:', result.message);
+}
+```
+
+### list()
+
+Lists all files in the configured storage zone and folder.
+
+**Returns:**
+
+```typescript
+Promise<{
+  res: boolean;
+  message: string;
+  files?: File[];
+}>;
+```
+
+**Example:**
+
+```typescript
+const result = await client.list();
+
+if (result.res && result.files) {
+  result.files.forEach((file) => {
+    console.log('File:', file.ObjectName, 'URL:', file.Url);
+  });
+}
+```
+
+### deleteFile(params)
+
+Deletes a file from BunnyCDN storage.
+
+**Parameters:**
+
+- `ObjectName`: File name to delete (optional)
+- `href`: Full URL of the file to delete (optional)
+
+**Returns:**
+
+```typescript
+Promise<{
+  res: boolean;
+  message: string;
+}>;
+```
+
+**Example:**
+
+```typescript
+// Delete by object name
+const result = await client.deleteFile({
+  ObjectName: 'image.webp',
+});
+
+// Or delete by URL
+const result = await client.deleteFile({
+  href: 'https://your-zone.b-cdn.net/uploads/image.webp',
+});
+```
 
 ### Features
 
