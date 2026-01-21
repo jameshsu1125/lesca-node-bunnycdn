@@ -9,7 +9,7 @@ BunnyCDN.install({
   password: process.env.VITE_PASSWORD || 'unset',
   storageZone: 'npm-demo',
   region: 'SG',
-  folderName: 'folder',
+  folderName: process.env.VITE_FOLDER_NAME || '',
 });
 
 const app = express();

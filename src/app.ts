@@ -28,26 +28,28 @@ const createApp = () => {
     const updateImageList = () => {
       const imageList = document.getElementById('file-list') as HTMLDivElement;
       imageList.innerHTML = '';
-      images.forEach((url) => {
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar relative';
-        const wDiv = document.createElement('div');
-        wDiv.className = 'w-24 rounded';
-        const img = document.createElement('img');
-        img.src = url;
-        wDiv.appendChild(img);
-        avatar.appendChild(wDiv);
-        imageList.appendChild(avatar);
+      images
+        .filter((url) => url.includes('.webp'))
+        .forEach((url) => {
+          const avatar = document.createElement('div');
+          avatar.className = 'avatar relative';
+          const wDiv = document.createElement('div');
+          wDiv.className = 'w-24 rounded';
+          const img = document.createElement('img');
+          img.src = url;
+          wDiv.appendChild(img);
+          avatar.appendChild(wDiv);
+          imageList.appendChild(avatar);
 
-        // remove button
-        const removeBtn = document.createElement('div');
-        removeBtn.className =
-          'absolute w-full h-full top-0 left-0 bg-black opacity-0 hover:opacity-50 flex justify-center items-center text-white text-2xl cursor-pointer font-mono';
-        removeBtn.innerText = 'X';
-        removeBtn.dataset.url = url;
-        removeBtn.addEventListener('click', onRemoveClick);
-        avatar.appendChild(removeBtn);
-      });
+          // remove button
+          const removeBtn = document.createElement('div');
+          removeBtn.className =
+            'absolute w-full h-full top-0 left-0 bg-black opacity-0 hover:opacity-50 flex justify-center items-center text-white text-2xl cursor-pointer font-mono';
+          removeBtn.innerText = 'X';
+          removeBtn.dataset.url = url;
+          removeBtn.addEventListener('click', onRemoveClick);
+          avatar.appendChild(removeBtn);
+        });
     };
 
     // upload
