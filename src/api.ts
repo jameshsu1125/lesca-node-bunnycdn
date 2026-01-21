@@ -6,13 +6,6 @@ import sharp from 'sharp';
 
 dotenv.config({ path: '.env.local' });
 
-const bunnyCDN = new BunnyCDN({
-  password: process.env.VITE_PASSWORD || 'unset',
-  storageZone: 'npm-demo',
-  region: 'SG',
-  folderName: process.env.VITE_FOLDER_NAME || '',
-});
-
 const app = express();
 const port = 3000;
 
@@ -51,7 +44,7 @@ app.post('/upload', uploadMulter.single('file'), async (req, res) => {
     .toFormat(sharpConfig.format || 'webp', { quality: sharpConfig.quality || 80 })
     .toBuffer();
 
-  const response = await bunnyCDN.upload({
+  const response = await BunnyCDN.upload({
     buffer,
   });
   if (response) res.json(response);
@@ -59,13 +52,13 @@ app.post('/upload', uploadMulter.single('file'), async (req, res) => {
 });
 
 app.get('/list', async (_, res) => {
-  const response = await bunnyCDN.list();
+  const response = await BunnyCDN.list();
   if (response) res.json(response);
   else res.json({ res: false, message: 'List error' });
 });
 
 app.post('/delete', async (req, res) => {
-  const response = await bunnyCDN.deleteFile({ href: req.body.href });
+  const response = await BunnyCDN.deleteFile({ href: req.body.href });
   if (response) res.json(response);
   else res.json({ res: false, message: 'Delete error' });
 });
