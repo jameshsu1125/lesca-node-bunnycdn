@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-import https from 'https';
 import { File, InstallParams, UploadParams } from './type';
 
 // 從環境變數或參數中取得配置
@@ -47,21 +46,34 @@ export const upload = async ({
           },
         };
 
-        const request = https.request(options, (response) => {
-          response.on('data', (chunk) => {
-            console.log(chunk.toString('utf8'));
-          });
-          if (response.statusCode === 201) {
-            const currentFolder = config.folderName ? `${config.folderName}/` : '';
-            const url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${filename}`;
-            resolve({ res: true, message: 'upload success', url });
-          } else reject({ res: false, message: 'Upload failed' });
+        const res = await fetch(`https://${options.hostname}${options.path}`, {
+          method: 'PUT',
+          headers: options.headers,
+          body: buffer ? new Uint8Array(buffer) : new Uint8Array(file!.buffer),
         });
-        request.on('error', (error) => {
-          reject({ res: false, message: 'Upload failed', error });
-        });
-        request.write(buffer || file!.buffer);
-        request.end();
+
+        // Bunny Storage 成功會回 201
+        if (res.status === 201) {
+          const currentFolder = config.folderName ? `${config.folderName}/` : '';
+          const cdnUrl = `https://${config.storageZone}.b-cdn.net/${currentFolder}${filename}`;
+
+          resolve({ res: true, message: 'upload success', url: cdnUrl });
+        } else {
+          reject({ res: false, message: 'Upload failed', error: await res.text() });
+        }
+
+        // const request = https.request(options, (response) => {
+        //   if (response.statusCode === 201) {
+        //     const currentFolder = config.folderName ? `${config.folderName}/` : '';
+        //     const url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${filename}`;
+        //     resolve({ res: true, message: 'upload success', url });
+        //   } else reject({ res: false, message: 'Upload failed' });
+        // });
+        // request.on('error', (error) => {
+        //   reject({ res: false, message: 'Upload failed', error });
+        // });
+        // request.write(buffer || file!.buffer);
+        // request.end();
       } catch (err) {
         reject({ res: false, message: 'Server error' });
       }

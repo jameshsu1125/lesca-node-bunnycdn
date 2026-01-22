@@ -35,7 +35,6 @@ app.post('/upload', uploadMulter.single('file'), async (req, res) => {
     quality: 80,
     width: 720,
   };
-
   const buffer = await sharp(req.file?.buffer)
     .resize({
       width: sharpConfig.width,
@@ -43,7 +42,6 @@ app.post('/upload', uploadMulter.single('file'), async (req, res) => {
     })
     .toFormat(sharpConfig.format || 'webp', { quality: sharpConfig.quality || 80 })
     .toBuffer();
-
   const response = await BunnyCDN.upload({
     buffer,
   });
