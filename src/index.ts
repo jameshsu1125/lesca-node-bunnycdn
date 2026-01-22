@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto';
 import { File, InstallParams, ListParams, UploadParams } from './type';
 
 // 從環境變數或參數中取得配置
@@ -35,8 +34,7 @@ export const upload = async ({
         const len = buffer ? buffer.length : file!.buffer.length;
         const baseFolder = config.folderName ? `${config.folderName}/` : '';
         const subFolder = folder ? `${folder}/` : '';
-        const filename = `${randomUUID()}.${'webp'}`;
-
+        const filename = `${new Date().getTime()}.${'webp'}`;
         const options = {
           method: 'PUT',
           hostname: config.region ? `${config.region}.${config.baseHostName}` : config.baseHostName,
@@ -52,7 +50,7 @@ export const upload = async ({
         const res = await fetch(`https://${options.hostname}${options.path}`, {
           method: 'PUT',
           headers: options.headers,
-          body: buffer ? new Uint8Array(buffer) : new Uint8Array(file!.buffer),
+          body: (buffer || file!.buffer) as BodyInit,
         });
 
         // Bunny Storage 成功會回 201
