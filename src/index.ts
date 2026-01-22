@@ -93,29 +93,6 @@ export const list = async (configOverrides: Partial<InstallParams> = {}) => {
         .catch((error) => {
           reject({ res: false, message: 'Network error', error });
         });
-
-      // https
-      //   .get(url, { headers }, (response) => {
-      //     let data = '';
-      //     response.on('data', (chunk) => {
-      //       data += chunk;
-      //     });
-      //     response.on('end', () => {
-      //       try {
-      //         const list = JSON.parse(data);
-      //         const currentList = list.map((item: { [k: string]: any }) => {
-      //           const Url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${item.ObjectName}`;
-      //           return { ...item, Url };
-      //         });
-      //         resolve({ res: true, message: 'List retrieved successfully', files: currentList });
-      //       } catch (err) {
-      //         reject({ res: false, message: 'Failed to parse response' });
-      //       }
-      //     });
-      //   })
-      //   .on('error', (error) => {
-      //     reject({ res: false, message: 'Network error', error });
-      //   });
     } catch (err) {
       reject({ res: false, message: 'Server error' });
     }
@@ -156,24 +133,6 @@ export const deleteFile = ({
         .catch((error) => {
           reject({ res: false, message: 'Network error', error });
         });
-
-      // https
-      //   .request(
-      //     {
-      //       method: 'DELETE',
-      //       hostname,
-      //       path: `/${config.storageZone}/${config.folderName}/${currentObjectName}`,
-      //       headers: { AccessKey: config.password },
-      //     },
-      //     (response) => {
-      //       if (response.statusCode === 200) {
-      //         resolve({ res: true, message: 'File deleted successfully' });
-      //       } else {
-      //         resolve({ res: false, message: 'Failed to delete file' });
-      //       }
-      //     },
-      //   )
-      //   .end();
     } catch (err) {
       reject({ res: false, message: 'Server error' });
     }
