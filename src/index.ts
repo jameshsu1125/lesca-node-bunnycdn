@@ -43,10 +43,14 @@ export const upload = async ({
           headers: {
             AccessKey: config.password,
             'Content-Type': 'application/octet-stream',
-            'Content-Length': len,
+            'Content-Length': len.toString(),
           },
         };
+
         const request = https.request(options, (response) => {
+          response.on('data', (chunk) => {
+            console.log(chunk.toString('utf8'));
+          });
           if (response.statusCode === 201) {
             const currentFolder = config.folderName ? `${config.folderName}/` : '';
             const url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${filename}`;
@@ -76,30 +80,42 @@ export const list = async (configOverrides: Partial<InstallParams> = {}) => {
       const currentFolder = config.folderName ? `${config.folderName}/` : '';
       const url = `https://${hostName}/${config.storageZone}/${currentFolder}`;
       const headers = { AccessKey: config.password };
-      console.log(headers, currentFolder, url, hostName);
 
-      https
-        .get(url, { headers }, (response) => {
-          let data = '';
-          response.on('data', (chunk) => {
-            data += chunk;
+      fetch(url, { headers })
+        .then((response) => response.json())
+        .then((data) => {
+          const currentList = data.map((item: { [k: string]: any }) => {
+            const Url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${item.ObjectName}`;
+            return { ...item, Url };
           });
-          response.on('end', () => {
-            try {
-              const list = JSON.parse(data);
-              const currentList = list.map((item: { [k: string]: any }) => {
-                const Url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${item.ObjectName}`;
-                return { ...item, Url };
-              });
-              resolve({ res: true, message: 'List retrieved successfully', files: currentList });
-            } catch (err) {
-              reject({ res: false, message: 'Failed to parse response' });
-            }
-          });
+          resolve({ res: true, message: 'List retrieved successfully', files: currentList });
         })
-        .on('error', (error) => {
+        .catch((error) => {
           reject({ res: false, message: 'Network error', error });
         });
+
+      // https
+      //   .get(url, { headers }, (response) => {
+      //     let data = '';
+      //     response.on('data', (chunk) => {
+      //       data += chunk;
+      //     });
+      //     response.on('end', () => {
+      //       try {
+      //         const list = JSON.parse(data);
+      //         const currentList = list.map((item: { [k: string]: any }) => {
+      //           const Url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${item.ObjectName}`;
+      //           return { ...item, Url };
+      //         });
+      //         resolve({ res: true, message: 'List retrieved successfully', files: currentList });
+      //       } catch (err) {
+      //         reject({ res: false, message: 'Failed to parse response' });
+      //       }
+      //     });
+      //   })
+      //   .on('error', (error) => {
+      //     reject({ res: false, message: 'Network error', error });
+      //   });
     } catch (err) {
       reject({ res: false, message: 'Server error' });
     }
@@ -126,23 +142,38 @@ export const deleteFile = ({
         ? decodeURIComponent(href.split(`/`)[href.split(`/`).length - 1])
         : ObjectName!;
 
-      https
-        .request(
-          {
-            method: 'DELETE',
-            hostname,
-            path: `/${config.storageZone}/${config.folderName}/${currentObjectName}`,
-            headers: { AccessKey: config.password },
-          },
-          (response) => {
-            if (response.statusCode === 200) {
-              resolve({ res: true, message: 'File deleted successfully' });
-            } else {
-              resolve({ res: false, message: 'Failed to delete file' });
-            }
-          },
-        )
-        .end();
+      fetch(`https://${hostname}/${config.storageZone}/${config.folderName}/${currentObjectName}`, {
+        method: 'DELETE',
+        headers: { AccessKey: config.password },
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            resolve({ res: true, message: 'File deleted successfully' });
+          } else {
+            resolve({ res: false, message: 'Failed to delete file' });
+          }
+        })
+        .catch((error) => {
+          reject({ res: false, message: 'Network error', error });
+        });
+
+      // https
+      //   .request(
+      //     {
+      //       method: 'DELETE',
+      //       hostname,
+      //       path: `/${config.storageZone}/${config.folderName}/${currentObjectName}`,
+      //       headers: { AccessKey: config.password },
+      //     },
+      //     (response) => {
+      //       if (response.statusCode === 200) {
+      //         resolve({ res: true, message: 'File deleted successfully' });
+      //       } else {
+      //         resolve({ res: false, message: 'Failed to delete file' });
+      //       }
+      //     },
+      //   )
+      //   .end();
     } catch (err) {
       reject({ res: false, message: 'Server error' });
     }
