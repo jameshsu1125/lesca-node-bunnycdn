@@ -29,7 +29,7 @@ const createApp = () => {
       const imageList = document.getElementById('file-list') as HTMLDivElement;
       imageList.innerHTML = '';
       images
-        .filter((url) => url.includes('.webp'))
+        .filter((url) => url.match(/\.(webp|png|jpe?g)$/i))
         .forEach((url) => {
           const avatar = document.createElement('div');
           avatar.className = 'avatar relative';

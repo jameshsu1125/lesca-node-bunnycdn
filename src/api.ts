@@ -44,13 +44,14 @@ app.post('/upload', uploadMulter.single('file'), async (req, res) => {
     .toBuffer();
   const response = await BunnyCDN.upload({
     buffer,
+    folder: 'AAA',
   });
   if (response) res.json(response);
   else res.json({ res: false, message: 'Upload error' });
 });
 
 app.get('/list', async (_, res) => {
-  const response = await BunnyCDN.list();
+  const response = await BunnyCDN.list({ folder: 'AAA' });
   if (response) res.json(response);
   else res.json({ res: false, message: 'List error' });
 });

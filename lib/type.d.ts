@@ -19,6 +19,11 @@ export type InstallParams = {
 export type UploadParams = {
     file?: Express.Multer.File;
     buffer?: Buffer;
+    folder?: string;
+};
+export type ListParams = {
+    folder?: string;
+    configOverrides?: Partial<InstallParams>;
 };
 export type LegacyUploadParams = {
     req: Request;

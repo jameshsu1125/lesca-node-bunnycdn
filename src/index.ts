@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { File, InstallParams, UploadParams } from './type';
+import { File, InstallParams, ListParams, UploadParams } from './type';
 
 // 從環境變數或參數中取得配置
 const getConfig = (overrides: Partial<InstallParams> = {}) => {
@@ -23,6 +23,7 @@ export const install = ({ storageZone, password, region, folderName }: InstallPa
 export const upload = async ({
   file,
   buffer,
+  folder,
   ...configOverrides
 }: UploadParams & Partial<InstallParams>) => {
   return new Promise<{ res: boolean; message: string; url?: string; error?: any }>(
@@ -31,14 +32,16 @@ export const upload = async ({
         if (!buffer && !file) reject({ res: false, message: 'No file uploaded' });
 
         const config = getConfig(configOverrides);
-        const filename = `${randomUUID()}.${'webp'}`;
         const len = buffer ? buffer.length : file!.buffer.length;
+        const baseFolder = config.folderName ? `${config.folderName}/` : '';
+        const subFolder = folder ? `${folder}/` : '';
+        const filename = `${randomUUID()}.${'webp'}`;
 
         const options = {
           method: 'PUT',
           hostname: config.region ? `${config.region}.${config.baseHostName}` : config.baseHostName,
           port: 443,
-          path: `/${config.storageZone}/${config.folderName}/${filename}`,
+          path: `/${config.storageZone}/${baseFolder}${subFolder}${filename}`,
           headers: {
             AccessKey: config.password,
             'Content-Type': 'application/octet-stream',
@@ -54,26 +57,11 @@ export const upload = async ({
 
         // Bunny Storage 成功會回 201
         if (res.status === 201) {
-          const currentFolder = config.folderName ? `${config.folderName}/` : '';
-          const cdnUrl = `https://${config.storageZone}.b-cdn.net/${currentFolder}${filename}`;
-
+          const cdnUrl = `https://${config.storageZone}.b-cdn.net/${baseFolder}${subFolder}${filename}`;
           resolve({ res: true, message: 'upload success', url: cdnUrl });
         } else {
           reject({ res: false, message: 'Upload failed', error: await res.text() });
         }
-
-        // const request = https.request(options, (response) => {
-        //   if (response.statusCode === 201) {
-        //     const currentFolder = config.folderName ? `${config.folderName}/` : '';
-        //     const url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${filename}`;
-        //     resolve({ res: true, message: 'upload success', url });
-        //   } else reject({ res: false, message: 'Upload failed' });
-        // });
-        // request.on('error', (error) => {
-        //   reject({ res: false, message: 'Upload failed', error });
-        // });
-        // request.write(buffer || file!.buffer);
-        // request.end();
       } catch (err) {
         reject({ res: false, message: 'Server error' });
       }
@@ -81,7 +69,7 @@ export const upload = async ({
   );
 };
 
-export const list = async (configOverrides: Partial<InstallParams> = {}) => {
+export const list = async ({ folder = '', configOverrides = {} }: ListParams = {}) => {
   return new Promise<{ res: boolean; message: string; files?: File[] }>((resolve, reject) => {
     try {
       const config = getConfig(configOverrides);
@@ -89,15 +77,17 @@ export const list = async (configOverrides: Partial<InstallParams> = {}) => {
         ? `${config.region}.${config.baseHostName}`
         : config.baseHostName;
 
-      const currentFolder = config.folderName ? `${config.folderName}/` : '';
-      const url = `https://${hostName}/${config.storageZone}/${currentFolder}`;
+      const baseFolder = config.folderName ? `${config.folderName}/` : '';
+      const subFolder = folder ? `${folder}/` : '';
+
+      const url = `https://${hostName}/${config.storageZone}/${baseFolder}${subFolder}`;
       const headers = { AccessKey: config.password };
 
       fetch(url, { headers })
         .then((response) => response.json())
         .then((data) => {
           const currentList = data.map((item: { [k: string]: any }) => {
-            const Url = `https://${config.storageZone}.b-cdn.net/${currentFolder}${item.ObjectName}`;
+            const Url = `https://${config.storageZone}.b-cdn.net/${baseFolder}${subFolder}${item.ObjectName}`;
             return { ...item, Url };
           });
           resolve({ res: true, message: 'List retrieved successfully', files: currentList });
