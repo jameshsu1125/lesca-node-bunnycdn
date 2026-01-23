@@ -6,6 +6,7 @@ const createApp = () => {
 
     const onRemoveClick = (e: MouseEvent) => {
       const button = e.currentTarget as HTMLDivElement;
+
       fetch('http://localhost:3000/delete', {
         method: 'POST',
         headers: {
@@ -27,7 +28,9 @@ const createApp = () => {
 
     const updateImageList = () => {
       const imageList = document.getElementById('file-list') as HTMLDivElement;
+      const fileFolder = document.getElementById('file-folder') as HTMLDivElement;
       imageList.innerHTML = '';
+      fileFolder.innerHTML = '';
       images
         .filter((url) => url.match(/\.(webp|png|jpe?g)$/i))
         .forEach((url) => {
@@ -46,6 +49,29 @@ const createApp = () => {
           removeBtn.className =
             'absolute w-full h-full top-0 left-0 bg-black opacity-0 hover:opacity-50 flex justify-center items-center text-white text-2xl cursor-pointer font-mono';
           removeBtn.innerText = 'X';
+          removeBtn.dataset.url = url;
+          removeBtn.addEventListener('click', onRemoveClick);
+          avatar.appendChild(removeBtn);
+        });
+
+      images
+        .filter((url) => !url.match(/\.(webp|png|jpe?g)$/i))
+        .forEach((url) => {
+          const avatar = document.createElement('div');
+          avatar.className = 'avatar relative';
+          const wDiv = document.createElement('div');
+          wDiv.className = 'w-24 rounded';
+          const img = document.createElement('img');
+          img.src = './vector-folder-directory-icon-png-701751694965455bukl0emvi3.png';
+          wDiv.appendChild(img);
+          avatar.appendChild(wDiv);
+          fileFolder.appendChild(avatar);
+
+          // remove button
+          const removeBtn = document.createElement('div');
+          removeBtn.className =
+            'absolute w-full h-full top-0 left-0 bg-black opacity-0 hover:opacity-50 flex justify-center items-center text-white text-sm text-center cursor-pointer font-mono';
+          removeBtn.innerText = `X ${url.split('/').pop()}`;
           removeBtn.dataset.url = url;
           removeBtn.addEventListener('click', onRemoveClick);
           avatar.appendChild(removeBtn);

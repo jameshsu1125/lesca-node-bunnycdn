@@ -110,16 +110,30 @@ export const deleteFile = ({
       return;
     }
     try {
+      // 解析 href 來提取檔案名稱和資料夾路徑
+      let fileName = '';
+      let folderPath = '';
+
+      if (href) {
+        // 移除 protocol 和 hostname
+        const urlParts = href.split('/').filter((part) => part !== '' && !part.includes('http'));
+        const isHasFile = [...urlParts].pop()?.includes('.') || false;
+        if (isHasFile) {
+          const urlArray = [...urlParts];
+          fileName = decodeURIComponent(urlArray.pop() || '');
+          folderPath = urlArray.splice(1, 1).join('/');
+        } else {
+          const urlArray = [...urlParts];
+          folderPath = urlArray.splice(1, 1).join('/');
+        }
+      }
+
       const config = getConfig(configOverrides);
       const hostname = config.region
         ? `${config.region}.${config.baseHostName}`
         : config.baseHostName;
-
-      const currentObjectName = href
-        ? decodeURIComponent(href.split(`/`)[href.split(`/`).length - 1])
-        : ObjectName!;
-
-      fetch(`https://${hostname}/${config.storageZone}/${config.folderName}/${currentObjectName}`, {
+      const currentFolderPath = folderPath ? `/${folderPath}` : '';
+      fetch(`https://${hostname}/${config.storageZone}${currentFolderPath}/${fileName}`, {
         method: 'DELETE',
         headers: { AccessKey: config.password },
       })

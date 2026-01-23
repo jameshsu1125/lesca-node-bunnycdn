@@ -2,7 +2,7 @@
   "name": "lesca-node-bunnycdn",
   "private": false,
   "description": "use bunny CDN api by node",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "type": "module",
   "keywords": [
     "bunnycdn",
