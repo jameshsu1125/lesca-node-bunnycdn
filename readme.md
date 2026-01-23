@@ -281,16 +281,7 @@ export const handler = async (event, context) => {
 
 ## Features
 
-- ✅ Upload files to BunnyCDN storage
-- ✅ List files in storage zone
-- ✅ Delete files from storage
-- ✅ Support for different regions
-- ✅ Folder organization
-- ✅ Full TypeScript support
-- ✅ Environment variable configuration
-- ✅ Automatic file extension handling (.webp)
-- ✅ UUID-based filename generation
-- ✅ Perfect for serverless functions
+- maintain if necessary
 
 ## License
 
@@ -299,7 +290,3 @@ MIT
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-### Features
-
-- maintain if necessary
