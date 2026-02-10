@@ -23,6 +23,7 @@ export const upload = async ({
   file,
   buffer,
   folder,
+  format,
   ...configOverrides
 }: UploadParams & Partial<InstallParams>) => {
   return new Promise<{ res: boolean; message: string; url?: string; error?: any }>(
@@ -34,7 +35,8 @@ export const upload = async ({
         const len = buffer ? buffer.length : file!.buffer.length;
         const baseFolder = config.folderName ? `${config.folderName}/` : '';
         const subFolder = folder ? `${folder}/` : '';
-        const filename = `${new Date().getTime()}.${'webp'}`;
+        const currentFormat = format ? format : 'jpg';
+        const filename = `${new Date().getTime()}.${currentFormat}`;
         const options = {
           method: 'PUT',
           hostname: config.region ? `${config.region}.${config.baseHostName}` : config.baseHostName,

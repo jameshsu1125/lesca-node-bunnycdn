@@ -2,7 +2,6 @@ import express from 'express';
 import multer from 'multer';
 import BunnyCDN from '.';
 import dotenv from 'dotenv';
-import sharp from 'sharp';
 
 dotenv.config({ path: '.env.local' });
 
@@ -30,22 +29,11 @@ const uploadMulter = multer({
 });
 
 app.post('/upload', uploadMulter.single('file'), async (req, res) => {
-  const sharpConfig: { format?: 'jpeg' | 'png' | 'webp'; quality?: number; width?: number } = {
-    format: 'webp',
-    quality: 80,
-    width: 720,
-  };
-  const buffer = await sharp(req.file?.buffer)
-    .resize({
-      width: sharpConfig.width,
-      withoutEnlargement: true,
-    })
-    .toFormat(sharpConfig.format || 'webp', { quality: sharpConfig.quality || 80 })
-    .toBuffer();
   const response = await BunnyCDN.upload({
-    buffer,
+    buffer: req.file?.buffer,
     folder: 'AAA',
   });
+  console.log(response);
   if (response) res.json(response);
   else res.json({ res: false, message: 'Upload error' });
 });

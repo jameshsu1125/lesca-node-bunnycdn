@@ -20,6 +20,7 @@ export type UploadParams = {
     file?: Express.Multer.File;
     buffer?: Buffer;
     folder?: string;
+    format?: 'jpeg' | 'png' | 'webp';
 };
 export type ListParams = {
     folder?: string;
