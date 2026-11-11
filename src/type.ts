@@ -22,7 +22,7 @@ export type InstallParams = {
 };
 
 export type UploadParams = {
-  file?: Express.Multer.File;
+  file?: { buffer: Buffer };
   buffer?: Buffer;
   folder?: string;
   format?: 'jpeg' | 'png' | 'webp';

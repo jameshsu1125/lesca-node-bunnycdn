@@ -107,7 +107,7 @@ const createApp = () => {
         .then((response) => response.json())
         .then((result) => {
           if (result.res) {
-            result.files.forEach((file: any) => {
+            result.files.forEach((file: { Url: string }) => {
               const url = file.Url;
               images.push(url);
             });

@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-interface ImportMetaEnv {}
+type ImportMetaEnv = Record<string, string>;
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;

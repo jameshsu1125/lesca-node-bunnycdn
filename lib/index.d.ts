@@ -1,11 +1,12 @@
 import { File, InstallParams, ListParams, UploadParams } from './type';
 export declare const install: ({ storageZone, password, region, folderName }: InstallParams) => void;
-export declare const upload: ({ file, buffer, folder, format, ...configOverrides }: UploadParams & Partial<InstallParams>) => Promise<{
+type TUploadResult = {
     res: boolean;
     message: string;
     url?: string;
-    error?: any;
-}>;
+    error?: unknown;
+};
+export declare const upload: ({ file, buffer, folder, format, ...configOverrides }: UploadParams & Partial<InstallParams>) => Promise<TUploadResult>;
 export declare const list: ({ folder, configOverrides }?: ListParams) => Promise<{
     res: boolean;
     message: string;
@@ -20,12 +21,7 @@ export declare const deleteFile: ({ ObjectName, href, ...configOverrides }: {
 }>;
 declare const BunnyCDN: {
     install: ({ storageZone, password, region, folderName }: InstallParams) => void;
-    upload: ({ file, buffer, folder, format, ...configOverrides }: UploadParams & Partial<InstallParams>) => Promise<{
-        res: boolean;
-        message: string;
-        url?: string;
-        error?: any;
-    }>;
+    upload: ({ file, buffer, folder, format, ...configOverrides }: UploadParams & Partial<InstallParams>) => Promise<TUploadResult>;
     list: ({ folder, configOverrides }?: ListParams) => Promise<{
         res: boolean;
         message: string;

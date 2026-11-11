@@ -19,54 +19,61 @@ export const install = ({ storageZone, password, region, folderName }: InstallPa
   if (folderName) process.env.BUNNY_FOLDER_NAME = folderName;
 };
 
+// 檔名加上隨機碼：只用毫秒時間會讓連續（或同毫秒）上傳的檔案撞名，後者覆蓋前者。
+const randomId = (length = 8) => {
+  const bytes = new Uint8Array(Math.ceil(length / 2));
+  if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(bytes);
+  else bytes.forEach((_, i) => (bytes[i] = Math.floor(Math.random() * 256)));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0'))
+    .join('')
+    .slice(0, length);
+};
+
+type TUploadResult = { res: boolean; message: string; url?: string; error?: unknown };
+
 export const upload = async ({
   file,
   buffer,
   folder,
   format,
   ...configOverrides
-}: UploadParams & Partial<InstallParams>) => {
-  return new Promise<{ res: boolean; message: string; url?: string; error?: any }>(
-    async (resolve, reject) => {
-      try {
-        if (!buffer && !file) reject({ res: false, message: 'No file uploaded' });
+}: UploadParams & Partial<InstallParams>): Promise<TUploadResult> => {
+  const body = buffer || file?.buffer;
+  if (!body) throw { res: false, message: 'No file uploaded' };
 
-        const config = getConfig(configOverrides);
-        const len = buffer ? buffer.length : file!.buffer.length;
-        const baseFolder = config.folderName ? `${config.folderName}/` : '';
-        const subFolder = folder ? `${folder}/` : '';
-        const currentFormat = format ? format : 'jpg';
-        const filename = `${new Date().getTime()}.${currentFormat}`;
-        const options = {
-          method: 'PUT',
-          hostname: config.region ? `${config.region}.${config.baseHostName}` : config.baseHostName,
-          port: 443,
-          path: `/${config.storageZone}/${baseFolder}${subFolder}${filename}`,
-          headers: {
-            AccessKey: config.password,
-            'Content-Type': 'application/octet-stream',
-            'Content-Length': len.toString(),
-          },
-        };
+  try {
+    const config = getConfig(configOverrides);
+    const baseFolder = config.folderName ? `${config.folderName}/` : '';
+    const subFolder = folder ? `${folder}/` : '';
+    const currentFormat = format ? format : 'jpg';
+    const filename = `${new Date().getTime()}-${randomId()}.${currentFormat}`;
+    const hostname = config.region
+      ? `${config.region}.${config.baseHostName}`
+      : config.baseHostName;
 
-        const res = await fetch(`https://${options.hostname}${options.path}`, {
-          method: 'PUT',
-          headers: options.headers,
-          body: (buffer || file!.buffer) as BodyInit,
-        });
+    const res = await fetch(
+      `https://${hostname}/${config.storageZone}/${baseFolder}${subFolder}${filename}`,
+      {
+        method: 'PUT',
+        headers: {
+          AccessKey: config.password,
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': body.length.toString(),
+        },
+        body: body as BodyInit,
+      },
+    );
 
-        // Bunny Storage 成功會回 201
-        if (res.status === 201) {
-          const cdnUrl = `https://${config.storageZone}.b-cdn.net/${baseFolder}${subFolder}${filename}`;
-          resolve({ res: true, message: 'upload success', url: cdnUrl });
-        } else {
-          reject({ res: false, message: 'Upload failed', error: await res.text() });
-        }
-      } catch (err) {
-        reject({ res: false, message: 'Server error' });
-      }
-    },
-  );
+    // Bunny Storage 成功會回 201
+    if (res.status === 201) {
+      const cdnUrl = `https://${config.storageZone}.b-cdn.net/${baseFolder}${subFolder}${filename}`;
+      return { res: true, message: 'upload success', url: cdnUrl };
+    }
+    throw { res: false, message: 'Upload failed', error: await res.text() };
+  } catch (err) {
+    if (typeof err === 'object' && err !== null && 'res' in err) throw err;
+    throw { res: false, message: 'Server error' };
+  }
 };
 
 export const list = async ({ folder = '', configOverrides = {} }: ListParams = {}) => {
@@ -86,7 +93,7 @@ export const list = async ({ folder = '', configOverrides = {} }: ListParams = {
       fetch(url, { headers })
         .then((response) => response.json())
         .then((data) => {
-          const currentList = data.map((item: { [k: string]: any }) => {
+          const currentList = data.map((item: { [k: string]: unknown }) => {
             const Url = `https://${config.storageZone}.b-cdn.net/${baseFolder}${subFolder}${item.ObjectName}`;
             return { ...item, Url };
           });
@@ -95,7 +102,7 @@ export const list = async ({ folder = '', configOverrides = {} }: ListParams = {
         .catch((error) => {
           reject({ res: false, message: 'Network error', error });
         });
-    } catch (err) {
+    } catch {
       reject({ res: false, message: 'Server error' });
     }
   });
@@ -149,7 +156,7 @@ export const deleteFile = ({
         .catch((error) => {
           reject({ res: false, message: 'Network error', error });
         });
-    } catch (err) {
+    } catch {
       reject({ res: false, message: 'Server error' });
     }
   });
